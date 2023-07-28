@@ -1,5 +1,4 @@
 #include "ISerializable.h"
-#include <json/json.h>
 
 class Forecast : ISerializable<Forecast> {
 
@@ -12,9 +11,8 @@ class Forecast : ISerializable<Forecast> {
     std::string timezone_abbreviation;
     int16_t elevation;
 
-    virtual const std::string toJson() {
+    virtual const void toJson(Json::Value& root) {
 
-      Json::Value root;
       root["latitude"] = latitude;
       root["longitude"] = longitude;
       root["generationtime_ms"] = generationtime_ms;
@@ -22,9 +20,6 @@ class Forecast : ISerializable<Forecast> {
       root["timezone"] = timezone;
       root["timezone_abbreviation"] = timezone_abbreviation;
       root["elevation"] = elevation;
-
-      Json::StyledWriter writer;      
-      return writer.write( root );
     }
 };
 
@@ -36,12 +31,12 @@ static Forecast forecastFromJson(const std::string& jsonData) {
   if (!reader.parse(jsonData, json)) {
     std::cout << "Error parsing json" << std::endl;
   } else {
-    forecast.latitude = json["latitude"].asDouble();
-    forecast.longitude = json["longitude"].asDouble();
-    forecast.generationtime_ms = json["generationtime_ms"].asDouble();
-    forecast.timezone = json["timezone"].asString();
-    forecast.elevation = json["elevation"].asInt();
-    forecast.timezone_abbreviation = json["timezone_abbreviation"].asString();
+    forecast.latitude = json.get("latitude", 0.0).asDouble();
+    forecast.longitude = json.get("longitude", 0.0).asDouble();
+    forecast.generationtime_ms = json.get("generationtime_ms", 0.0).asDouble();
+    forecast.timezone = json.get("timezone", "").asString();
+    forecast.elevation = json.get("elevation", 0).asInt();
+    forecast.timezone_abbreviation = json.get("timezone_abbreviation", "").asString();
   }
 
   return forecast;
